@@ -161,7 +161,7 @@ git clone https://github.com/seu-usuario/spring-security-oauth2-study.git
 
 2. Navegue para o diretório do projeto:
 ```bash
-  cd spring-security-oauth2-study
+cd spring-security-oauth2-study
 ```
 
 3. Configuração do application.yaml 
