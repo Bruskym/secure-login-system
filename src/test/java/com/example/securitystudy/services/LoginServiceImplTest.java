@@ -119,8 +119,6 @@ public class LoginServiceImplTest {
         LoginRequest loginRequest = new LoginRequest("user2", 
         "12345");
 
-        User user = createUser("user1", "hashedPassword", "ROLE_USER");
-
         when(userRepository.findByUsername(loginRequest.username())).thenReturn(Optional.empty());
 
         BadCredentialsException exception = assertThrows(BadCredentialsException.class,
