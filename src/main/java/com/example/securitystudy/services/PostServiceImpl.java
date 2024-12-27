@@ -30,31 +30,28 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public void makePost(PostRequest request, String userId) {
-        User optUser = userService.getUserById(userId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User user = userService.getUserById(userId);
 
         Post post = new Post();
         post.setContent(request.content());
-        post.setUser(optUser);
+        post.setUser(user);
         
         postRepository.save(post);
     }
 
     @Override
     public void deletePostById(Long postId, String userId) {
-        Post optPost = postRepository.findById(postId).orElseThrow(
+        Post post = postRepository.findById(postId).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        User publisherUser = userService.getUserById(userId).orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        
-        UUID publisherUserId = optPost.getUser().getUserId();
+        User publisherUser = userService.getUserById(userId);
+        UUID publisherUserId = post.getUser().getUserId();
         
         if(!publisherUser.hasAdmin() && !publisherUserId.equals(UUID.fromString(userId))) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        postRepository.delete(optPost);
+        postRepository.delete(post);
     }
 
     @Override
