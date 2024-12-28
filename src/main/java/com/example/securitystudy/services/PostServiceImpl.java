@@ -44,10 +44,10 @@ public class PostServiceImpl implements PostService{
         Post post = postRepository.findById(postId).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        User publisherUser = userService.getUserById(userId);
+        User requestingUser = userService.getUserById(userId);
         UUID publisherUserId = post.getUser().getUserId();
         
-        if(!publisherUser.hasAdmin() && !publisherUserId.equals(UUID.fromString(userId))) {
+        if(!requestingUser.hasAdmin() && !publisherUserId.equals(requestingUser.getUserId())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 

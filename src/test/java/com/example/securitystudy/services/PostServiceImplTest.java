@@ -3,10 +3,12 @@ package com.example.securitystudy.services;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,11 +22,14 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.securitystudy.dtos.requests.PostRequest;
 import com.example.securitystudy.dtos.responses.PostResponse;
@@ -45,7 +50,6 @@ public class PostServiceImplTest {
     @InjectMocks
     PostServiceImpl postService;
 
-
     @Captor
     ArgumentCaptor<Post> postArgumentCaptor;
     
@@ -63,6 +67,21 @@ public class PostServiceImplTest {
         return user;
     }
 
+    private User createAdmin(String username, String password) {
+        User user = new User();
+        user.setUserId(UUID.randomUUID());
+        user.setUsername(username);
+        user.setPassword(password);
+
+        Role role = new Role();
+        role.setRoleId(2l);
+        role.setRoleName(Role.PossibleRoles.ADMIN.name());
+
+        user.setRoles(Set.of(role));
+        return user;
+    }
+
+
     private Post createPost(User OP, String content, long postId){
         Post post = new Post();
         post.setPostId(postId);
@@ -78,7 +97,7 @@ public class PostServiceImplTest {
 
         @Test
         @DisplayName("Should make post sucessfuly")
-        public void shouldMakePostSucessfuly(){
+        public void ShouldMakePostSucessfuly(){
             PostRequest postRequest = new PostRequest("postagem teste");
             User user = createUser("OP", "hashedPass");
             String userId = user.getUserId().toString();
@@ -102,7 +121,96 @@ public class PostServiceImplTest {
         @Test
         @DisplayName("Should delete the post successfully being the author of the post")
         public void ShouldDeleteThePostSucessfullyBeingTheAuthorOfThePost(){
+            String requestingUserId = UUID.randomUUID().toString();
+            Long postId = 1l;
             
+            Post post = createPost(createUser("user1", "hashedPass"), "content", 1l);                
+            post.getUser().setUserId(UUID.fromString(requestingUserId));
+            
+            doReturn(Optional.of(post)).when(postRepository).findById(postId);
+            doReturn(post.getUser()).when(userService).getUserById(requestingUserId);
+           
+            postService.deletePostById(postId, requestingUserId);
+
+            verify(postRepository, times(1)).findById(postId);
+            verify(postRepository, times(1)).delete(postArgumentCaptor.capture());
+            verify(userService, times(1)).getUserById(requestingUserId);
+
+            Post deletedPost = postArgumentCaptor.getValue();
+
+            assertEquals(post, deletedPost);
+            assertEquals(postId, deletedPost.getPostId());
+            assertEquals(post.getContent(), deletedPost.getContent());
+
+            verifyNoMoreInteractions(postRepository);
+            verifyNoMoreInteractions(userService);
+        }
+
+        @Test
+        @DisplayName("Should delete the post successfully being admin")
+        public void ShouldDeleteThePostSucessfullyBeingAdmin(){
+            String requestingUserId = UUID.randomUUID().toString();
+            User adminUser = createAdmin("admin1", "hashedPass");
+
+            Long postId = 1l;
+            
+            Post post = createPost(createUser("user1", "hashedPass"), "content", 1l);                
+            
+            doReturn(Optional.of(post)).when(postRepository).findById(postId);
+            doReturn(adminUser).when(userService).getUserById(requestingUserId);
+           
+            postService.deletePostById(postId, requestingUserId);
+
+            verify(postRepository, times(1)).findById(postId);
+            verify(postRepository, times(1)).delete(postArgumentCaptor.capture());
+            verify(userService, times(1)).getUserById(requestingUserId);
+
+            Post deletedPost = postArgumentCaptor.getValue();
+
+            assertEquals(post, deletedPost);
+            assertEquals(postId, deletedPost.getPostId());
+            assertTrue(adminUser.hasAdmin());
+
+            verifyNoMoreInteractions(postRepository);
+            verifyNoMoreInteractions(userService);
+        }   
+
+        @Test
+        @DisplayName("Should throw ResponseStatusException when user is not admin or post owner")
+        public void ShouldThrowResponseStatusExceptionWhenUserIsNotAdminNorPostOwner(){
+            User requestingUser = createUser("user1", "hash1");
+            String requestingUserId = requestingUser.getUserId().toString();
+
+            long postId = 1l;
+            Post post = createPost(createUser("user2", "hash2"), "content", 1l);
+
+            doReturn(Optional.of(post)).when(postRepository).findById(postId);
+            doReturn(requestingUser).when(userService).getUserById(requestingUserId);
+
+            ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+            () -> postService.deletePostById(postId, requestingUserId));
+            
+            assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+            verify(postRepository, times(0)).delete(post);
+        }
+
+        @Test
+        @DisplayName("Should throw ResponseStatusException when post is not exists")
+        public void ShouldThrowResponseStatusExceptionWhenPostDoesNotExist(){
+            User requestingUser = createUser("user1", "hash1");
+            String requestingUserId = requestingUser.getUserId().toString();
+
+            long postId = 2l;
+
+            doReturn(Optional.empty()).when(postRepository).findById(postId);
+            
+            ResponseStatusException exception = assertThrows(ResponseStatusException.class, 
+            () -> postService.deletePostById(postId, requestingUserId));
+
+            verify(postRepository, times(1)).findById(postId);
+            assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+            verifyNoMoreInteractions(postRepository);
+            verifyNoMoreInteractions(userService);
         }
 
     }
