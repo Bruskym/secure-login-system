@@ -137,7 +137,11 @@ public class PostServiceImplTest {
             Sort.by("creationInstant").descending());
             ArgumentCaptor<Pageable> pageableArgumentCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-            doReturn(new PageImpl<>(posts)).when(postRepository).findAll(pageableConfig);
+            List<Post> sortedPosts = posts.stream()
+            .sorted((p1, p2) -> p2.getCreationInstant().compareTo(p1.getCreationInstant()))
+            .toList();
+
+            doReturn(new PageImpl<>(sortedPosts)).when(postRepository).findAll(pageableConfig);
             
             // act && assert
             List<PostResponse> response = postService.getPostsByPage(page);
@@ -154,7 +158,7 @@ public class PostServiceImplTest {
             assertEquals(2, response.size());
 
             for(int i=0; i < response.size(); i++){
-                assertPostResponse(posts.get(i), response.get(i));
+                assertPostResponse(sortedPosts.get(i), response.get(i));
             }
         }
 
