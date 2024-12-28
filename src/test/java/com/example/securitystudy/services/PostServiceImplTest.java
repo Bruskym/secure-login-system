@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -168,7 +169,7 @@ public class PostServiceImplTest {
             List<PostResponse> response = postService.getPostsByPage(page);
             
             verify(postRepository, times(1)).findAll(any(Pageable.class));
-            assertEquals(0, response.size());
+            assertTrue(response.isEmpty());
         }
     }
     
