@@ -120,6 +120,13 @@ public class PostServiceImplTest {
 
         List<Post> posts = List.of(post1, post2);
 
+        private void assertPostResponse(Post post, PostResponse response) {
+            assertEquals(post.getUser().getUsername(), response.username());
+            assertEquals(post.getContent(), response.content());
+            assertEquals(post.getCreationInstant(), response.creationDate());
+        }
+
+
         @Test
         @DisplayName("Should return all posts by page")
         public void ShouldReturnAllPostsByPage(){
@@ -132,7 +139,7 @@ public class PostServiceImplTest {
 
             doReturn(new PageImpl<>(posts)).when(postRepository).findAll(pageableConfig);
             
-            //act && assert
+            // act && assert
             List<PostResponse> response = postService.getPostsByPage(page);
 
             verify(postRepository, times(1)).findAll(pageableArgumentCaptor.capture());
@@ -146,13 +153,9 @@ public class PostServiceImplTest {
             // resultado
             assertEquals(2, response.size());
 
-            assertEquals(post1.getUser().getUsername(), response.get(0).username());
-            assertEquals(post1.getContent(), response.get(0).content());
-            assertEquals(post1.getCreationInstant(), response.get(0).creationDate());
-            
-            assertEquals(post2.getUser().getUsername(), response.get(1).username());
-            assertEquals(post2.getContent(), response.get(1).content());
-            assertEquals(post2.getCreationInstant(), response.get(1).creationDate());
+            for(int i=0; i < response.size(); i++){
+                assertPostResponse(posts.get(i), response.get(i));
+            }
         }
 
         @Test
