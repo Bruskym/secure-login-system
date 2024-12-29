@@ -186,15 +186,5 @@ cp .env.example .env
 mvn spring-boot:run
 ```
 
-6. Acesse:
-   - **Endpoints da API:** [http://localhost:8080](http://localhost:8080)
-
----
-
-## Melhorias Futuras
-- Documentar a API com Swagger.
-- Refinar o tratamento de erros e validação.
-
----
 
 
