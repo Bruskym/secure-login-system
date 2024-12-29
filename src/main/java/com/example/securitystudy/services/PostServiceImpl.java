@@ -40,15 +40,15 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public void deletePostById(Long postId, String userId) {
+    public void deletePostById(Long postId, String requestingUserId) {
         Post post = postRepository.findById(postId).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        User requestingUser = userService.getUserById(userId);
+        User requestingUser = userService.getUserById(requestingUserId);
         UUID publisherUserId = post.getUser().getUserId();
         
         if(!requestingUser.hasAdmin() && !publisherUserId.equals(requestingUser.getUserId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         postRepository.delete(post);
