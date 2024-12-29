@@ -1,5 +1,4 @@
 Repositório de estudo sobre Spring Security e OAuth2, implementando autenticação e autorização em uma aplicação web. Inclui exemplos práticos de endpoints para registro, login, gerenciamento de posts e controle de acesso baseado em roles.
----
 
 ## Funcionalidades
 
