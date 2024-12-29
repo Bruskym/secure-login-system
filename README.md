@@ -1,7 +1,4 @@
-# API de Estudo: Spring Security com OAuth2
-
-Repositório para fins de estudo do **Spring Security** e **OAuth2**, aplicando autenticação e autorização para proteger uma aplicação web. É um exemplo prático para estudo, contendo endpoints para registro, login, gerenciamento de posts e controle de acesso baseado em roles.
-
+Repositório de estudo sobre Spring Security e OAuth2, implementando autenticação e autorização em uma aplicação web. Inclui exemplos práticos de endpoints para registro, login, gerenciamento de posts e controle de acesso baseado em roles.
 ---
 
 ## Funcionalidades
