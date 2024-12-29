@@ -196,9 +196,7 @@ mvn spring-boot:run
 ---
 
 ## Melhorias Futuras
-- Implementar testes automatizados.
 - Documentar a API com Swagger.
-- Adicionar suporte para roles dinâmicas (CRUD de roles).
 - Refinar o tratamento de erros e validação.
 
 ---
